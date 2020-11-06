@@ -3772,7 +3772,6 @@ void rcu_cpu_starting(unsigned int cpu)
 	smp_mb(); /* Ensure RCU read-side usage follows above initialization. */
 }
 
-#ifdef CONFIG_HOTPLUG_CPU
 /*
  * The CPU is exiting the idle loop into the arch_cpu_idle_dead()
  * function.  We now remove it from the rcu_node tree's ->qsmaskinitnext
@@ -3859,6 +3858,7 @@ static void rcu_migrate_callbacks(int cpu, struct rcu_state *rsp)
 		  rcu_segcblist_first_cb(&rdp->cblist));
 }
 
+#ifdef CONFIG_HOTPLUG_CPU
 /*
  * The outgoing CPU has just passed through the dying-idle state,
  * and we are being invoked from the CPU that was IPIed to continue the
