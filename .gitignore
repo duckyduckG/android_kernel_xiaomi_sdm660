@@ -42,6 +42,7 @@
 *.tab.[ch]
 *.tar
 *.xz
+*.diff
 Module.symvers
 modules.builtin
 
@@ -139,3 +140,5 @@ kernel/configs/android-*.cfg
 #Ignoring Android.bp link file
 #
 Android.bp
+build.sh
+out/
