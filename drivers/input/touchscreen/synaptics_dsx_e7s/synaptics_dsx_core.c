@@ -1064,6 +1064,8 @@ static int synaptics_rmi4_f12_wg(struct synaptics_rmi4_data *rmi4_data,
 static void synaptics_rmi4_wakeup_gesture(struct synaptics_rmi4_data *rmi4_data,
 		bool enable)
 {
+	if (!rmi4_data)
+		return;
 	if (rmi4_data->f11_wakeup_gesture)
 		synaptics_rmi4_f11_wg(rmi4_data, enable);
 	else if (rmi4_data->f12_wakeup_gesture)
