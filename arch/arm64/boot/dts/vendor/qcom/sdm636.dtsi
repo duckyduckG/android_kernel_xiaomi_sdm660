@@ -79,6 +79,14 @@
 	/delete-node/ qcom,smp2p-cdsp;
 	/delete-node/ qcom,smp2p_interrupt_rdbg_5_in;
 	/delete-node/ qcom,smp2p_interrupt_rdbg_5_out;
+
+	qmi-tmd-devices {
+		/delete-node/ cdsp;
+	};
+};
+
+&thermal_zones {
+	/delete-node/ cdsp-usr;
 };
 
 /* GPU overrides */
