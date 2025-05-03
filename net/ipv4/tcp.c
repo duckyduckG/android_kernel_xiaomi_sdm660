@@ -2657,7 +2657,6 @@ int tcp_disconnect(struct sock *sk, int flags)
 	tp->dsack_dups = 0;
 	tp->reord_seen = 0;
 	tp->fast_ack_mode = 0;
-	tp->plb_rehash = 0;
 
 	/* Clean up fastopen related fields */
 	tcp_free_fastopen_req(tp);
@@ -3281,8 +3280,6 @@ void tcp_get_info(struct sock *sk, struct tcp_info *info)
 	info->tcpi_bytes_retrans = tp->bytes_retrans;
 	info->tcpi_dsack_dups = tp->dsack_dups;
 	info->tcpi_reord_seen = tp->reord_seen;
-	info->tcpi_rcv_wnd = tp->rcv_wnd;
-	info->tcpi_rehash = tp->plb_rehash + tp->timeout_rehash;
 	unlock_sock_fast(sk, slow);
 }
 EXPORT_SYMBOL_GPL(tcp_get_info);
@@ -3311,8 +3308,6 @@ static size_t tcp_opt_stats_get_size(void)
 		nla_total_size_64bit(sizeof(u64)) + /* TCP_NLA_BYTES_RETRANS */
 		nla_total_size(sizeof(u32)) + /* TCP_NLA_DSACK_DUPS */
 		nla_total_size(sizeof(u32)) + /* TCP_NLA_REORD_SEEN */
-		nla_total_size(sizeof(u16)) + /* TCP_NLA_TIMEOUT_REHASH */
-		nla_total_size(sizeof(u32)) + /* TCP_NLA_REHASH */
 		0;
 }
 
@@ -3366,8 +3361,6 @@ struct sk_buff *tcp_get_timestamping_opt_stats(const struct sock *sk)
 			  TCP_NLA_PAD);
 	nla_put_u32(stats, TCP_NLA_DSACK_DUPS, tp->dsack_dups);
 	nla_put_u32(stats, TCP_NLA_REORD_SEEN, tp->reord_seen);
-	nla_put_u16(stats, TCP_NLA_TIMEOUT_REHASH, tp->timeout_rehash);
-	nla_put_u32(stats, TCP_NLA_REHASH, tp->plb_rehash + tp->timeout_rehash);
 
 	return stats;
 }
@@ -3982,7 +3975,7 @@ void __init tcp_init(void)
 	max_rshare = min(6UL*1024*1024, limit);
 
 	init_net.ipv4.sysctl_tcp_wmem[0] = SK_MEM_QUANTUM;
-	init_net.ipv4.sysctl_tcp_wmem[1] = 20*1024;
+	init_net.ipv4.sysctl_tcp_wmem[1] = 16*1024;
 	init_net.ipv4.sysctl_tcp_wmem[2] = max(64*1024, max_wshare);
 
 	init_net.ipv4.sysctl_tcp_rmem[0] = SK_MEM_QUANTUM;

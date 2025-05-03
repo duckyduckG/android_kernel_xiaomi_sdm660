@@ -4303,20 +4303,6 @@ static void tcp_dsack_extend(struct sock *sk, u32 seq, u32 end_seq)
 		tcp_sack_extend(tp->duplicate_sack, seq, end_seq);
 }
 
-/* FIXME-BACKPORTME */
-/*
-static void tcp_rcv_spurious_retrans(struct sock *sk, const struct sk_buff *skb)
-{
-	/* When the ACK path fails or drops most ACKs, the sender would
-	 * timeout and spuriously retransmit the same segment repeatedly.
-	 * The receiver remembers and reflects via DSACKs. Leverage the
-	 * DSACK state and change the txhash to re-route speculatively.
-
-	if (TCP_SKB_CB(skb)->seq == tcp_sk(sk)->duplicate_sack[0].start_seq &&
-	    sk_rethink_txhash(sk))
-		NET_INC_STATS(sock_net(sk), LINUX_MIB_TCPDUPLICATEDATAREHASH);
-}
-*/
 static void tcp_send_dupack(struct sock *sk, const struct sk_buff *skb)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
@@ -5930,14 +5916,8 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
 		 *        the segment and return)"
 		 */
 		if (!after(TCP_SKB_CB(skb)->ack_seq, tp->snd_una) ||
-		    after(TCP_SKB_CB(skb)->ack_seq, tp->snd_nxt)) {
-			/* Previous FIN/ACK or RST/ACK might be ignored. */
-			if (icsk->icsk_retransmits == 0)
-				inet_csk_reset_xmit_timer(sk,
-						ICSK_TIME_RETRANS,
-						TCP_TIMEOUT_MIN, TCP_RTO_MAX);
+		    after(TCP_SKB_CB(skb)->ack_seq, tp->snd_nxt))
 			goto reset_and_undo;
-		}
 
 		if (tp->rx_opt.saw_tstamp && tp->rx_opt.rcv_tsecr &&
 		    !between(tp->rx_opt.rcv_tsecr, tp->retrans_stamp,

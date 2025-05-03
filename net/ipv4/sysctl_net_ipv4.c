@@ -56,8 +56,6 @@ static int tcp_delack_seg_min = TCP_DELACK_MIN;
 static int tcp_delack_seg_max = 60;
 static int tcp_use_userconfig_min;
 static int tcp_use_userconfig_max = 1;
-static int tcp_plb_max_rounds = 31;
-static int tcp_plb_max_cong_thresh = 256;
 
 /* obsolete */
 static int sysctl_tcp_low_latency __read_mostly;
@@ -1160,7 +1158,7 @@ static struct ctl_table ipv4_net_table[] = {
 		.procname	= "tcp_limit_output_bytes",
 		.data		= &init_net.ipv4.sysctl_tcp_limit_output_bytes,
 		.maxlen		= sizeof(int),
-		.mode		= 0444,
+		.mode		= 0644,
 		.proc_handler	= proc_dointvec
 	},
 	{
@@ -1269,47 +1267,6 @@ static struct ctl_table ipv4_net_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec_minmax,
 		.extra1		= &one
-	},
-	{
-		.procname       = "tcp_plb_enabled",
-		.data           = &init_net.ipv4.sysctl_tcp_plb_enabled,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra1         = &zero,
-		.extra2         = &one,
-	},
-	{
-		.procname       = "tcp_plb_idle_rehash_rounds",
-		.data           = &init_net.ipv4.sysctl_tcp_plb_idle_rehash_rounds,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra2		= &tcp_plb_max_rounds,
-	},
-	{
-		.procname       = "tcp_plb_rehash_rounds",
-		.data           = &init_net.ipv4.sysctl_tcp_plb_rehash_rounds,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra2         = &tcp_plb_max_rounds,
-	},
-	{
-		.procname       = "tcp_plb_suspend_rto_sec",
-		.data           = &init_net.ipv4.sysctl_tcp_plb_suspend_rto_sec,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-	},
-	{
-		.procname       = "tcp_plb_cong_thresh",
-		.data           = &init_net.ipv4.sysctl_tcp_plb_cong_thresh,
-		.maxlen         = sizeof(int),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra1         = &zero,
-		.extra2         = &tcp_plb_max_cong_thresh,
 	},
 	{ }
 };
