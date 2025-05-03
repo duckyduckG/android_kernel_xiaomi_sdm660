@@ -24,7 +24,7 @@
 /*
  * Enable/Disable suspend back off logic attribute
  */
-static bool sbo_enabled = true;
+static bool sbo_enabled = false;
 
 /*
  * For how many percent an alive time is decayed
