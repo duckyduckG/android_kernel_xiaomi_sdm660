@@ -156,7 +156,7 @@
 
 		qcom,dwc-usb3-msm-tx-fifo-size = <21288>;
 		extcon = <&pm660_pdphy>;
-		qcom,pm-qos-latency = <57>; /* CPU-CLUSTER-WFI-LVL latency +1 */
+		qcom,pm-qos-latency = <61>; /* CPU-CLUSTER-WFI-LVL latency +1 */
 
 		clocks = <&clock_gcc GCC_USB30_MASTER_CLK>,
 			<&clock_gcc GCC_CFG_NOC_USB3_AXI_CLK>,
@@ -473,7 +473,7 @@
 			<87 512 0 0>,
 			<87 512 60000 800000>;
 
-		qcom,pm-qos-latency = <57>; /* CPU-CLUSTER-WFI-LVL latency +1 */
+		qcom,pm-qos-latency = <61>; /* CPU-CLUSTER-WFI-LVL latency +1 */
 		clocks = <&clock_gcc GCC_USB20_MASTER_CLK>,
 			<&clock_gcc GCC_CFG_NOC_USB2_AXI_CLK>,
 			<&clock_gcc GCC_USB20_MOCK_UTMI_CLK>,
@@ -558,10 +558,10 @@
 		qcom,devfreq,freq-table = <50000000 200000000>;
 
 		qcom,pm-qos-irq-type = "affine_irq";
-		qcom,pm-qos-irq-latency = <42 42>;
+		qcom,pm-qos-irq-latency = <26 26>;
 		qcom,pm-qos-cpu-groups = <0x0f 0xf0>;
-		qcom,pm-qos-cmdq-latency-us = <42 42>, <42 42>;
-		qcom,pm-qos-legacy-latency-us = <42 42>, <42 42>;
+		qcom,pm-qos-cmdq-latency-us = <26 26>, <26 26>;
+		qcom,pm-qos-legacy-latency-us = <26 26>, <26 26>;
 
 		qcom,msm-bus,name = "sdhc1";
 		qcom,msm-bus,num-cases = <9>;
@@ -659,9 +659,9 @@
 		qcom,devfreq,freq-table = <50000000 200000000>;
 
 		qcom,pm-qos-irq-type = "affine_irq";
-		qcom,pm-qos-irq-latency = <42 42>;
+		qcom,pm-qos-irq-latency = <26 26>;
 		qcom,pm-qos-cpu-groups = <0x0f 0xf0>;
-		qcom,pm-qos-legacy-latency-us = <42 42>, <42 42>;
+		qcom,pm-qos-legacy-latency-us = <26 26>, <26 26>;
 
 		clocks = <&clock_gcc GCC_SDCC2_AHB_CLK>,
 			<&clock_gcc GCC_SDCC2_APPS_CLK>;
