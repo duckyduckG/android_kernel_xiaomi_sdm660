@@ -8541,6 +8541,9 @@ static void yield_task_fair(struct rq *rq)
 	clear_buddies(cfs_rq, se);
 #endif // CONFIG_SCHED_BORE
 
+#ifndef CONFIG_SCHED_BORE
+	if (curr->policy != SCHED_BATCH) {
+#endif
 	update_rq_clock(rq);
 	/*
 	 * Update run-time statistics of the 'current'.
@@ -8559,6 +8562,9 @@ static void yield_task_fair(struct rq *rq)
 	 * and double the fastpath cost.
 	 */
 	rq_clock_skip_update(rq);
+#ifndef CONFIG_SCHED_BORE
+	}
+#endif
 
 	set_skip_buddy(se);
 }
