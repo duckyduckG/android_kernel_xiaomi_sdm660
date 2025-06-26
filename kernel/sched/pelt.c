@@ -38,7 +38,7 @@ static u64 decay_load(u64 val, u64 n)
 {
 	unsigned int local_n;
 
-	if (unlikely(n > LOAD_AVG_PERIOD * 63))
+	if (unlikely(n > PELT16_LOAD_AVG_PERIOD * 63))
 		return 0;
 
 	/* after bounds checking we can collapse to 32-bit */
@@ -51,12 +51,12 @@ static u64 decay_load(u64 val, u64 n)
 	 *
 	 * To achieve constant time decay_load.
 	 */
-	if (unlikely(local_n >= LOAD_AVG_PERIOD)) {
-		val >>= local_n / LOAD_AVG_PERIOD;
-		local_n %= LOAD_AVG_PERIOD;
+	if (unlikely(local_n >= PELT16_LOAD_AVG_PERIOD)) {
+		val >>= local_n / PELT16_LOAD_AVG_PERIOD;
+		local_n %= PELT16_LOAD_AVG_PERIOD;
 	}
 
-	val = mul_u64_u32_shr(val, runnable_avg_yN_inv[local_n], 32);
+	val = mul_u64_u32_shr(val, pelt16_runnable_avg_yN_inv[local_n], 32);
 	return val;
 }
 
@@ -78,7 +78,7 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
 	 *    = 1024 ( \Sum y^n - \Sum y^n - y^0 )
 	 *              n=0        n=p
 	 */
-	c2 = LOAD_AVG_MAX - decay_load(LOAD_AVG_MAX, periods) - 1024;
+	c2 = LOAD_AVG_MAX - decay_load(PELT16_LOAD_AVG_MAX, periods) - 1024;
 
 	return c1 + c2 + c3;
 }
@@ -226,7 +226,7 @@ ___update_load_sum(u64 now, struct sched_avg *sa,
 static __always_inline void
 ___update_load_avg(struct sched_avg *sa, unsigned long load, unsigned long runnable)
 {
-	u32 divider = LOAD_AVG_MAX - 1024 + sa->period_contrib;
+	u32 divider = PELT16_LOAD_AVG_MAX - 1024 + sa->period_contrib;
 
 	/*
 	 * Step 2: update *_avg.
