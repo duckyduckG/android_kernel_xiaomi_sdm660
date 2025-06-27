@@ -7704,7 +7704,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 			max_util = max(max_util, cpu_util);
 		}
 
-		energy += em_pd_energy(pd->em_pd, max_util, sum_util);
+		energy += em_cpu_energy(pd->em_pd, max_util, sum_util);
 	}
 
 	return energy;
