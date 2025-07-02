@@ -1,6 +1,7 @@
 #include <linux/input/tp_common.h>
 
 bool capacitive_keys_enabled;
+EXPORT_SYMBOL(capacitive_keys_enabled);
 struct kobject *touchpanel_kobj;
 
 #define TS_ENABLE_FOPS(type)                                                   \

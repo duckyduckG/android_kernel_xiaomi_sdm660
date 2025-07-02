@@ -5590,4 +5590,5 @@ int mdss_prim_panel_fb_unblank(int timeout)
 	pr_err("primary panel is not existed\n");
 	return -EINVAL;
 }
+EXPORT_SYMBOL(mdss_prim_panel_fb_unblank);
 #endif

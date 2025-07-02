@@ -1526,6 +1526,7 @@ int kernfs_remove_by_name_ns(struct kernfs_node *parent, const char *name,
 	else
 		return -ENOENT;
 }
+EXPORT_SYMBOL(kernfs_remove_by_name_ns);
 
 /**
  * kernfs_rename_ns - move and rename a kernfs_node

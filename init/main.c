@@ -554,6 +554,7 @@ static void __init mm_init(void)
 
 #ifdef CONFIG_MACH_LONGCHEER
 int fpsensor = 1;
+EXPORT_SYMBOL(fpsensor);
 bool is_poweroff_charge = false;
 #endif
 asmlinkage __visible void __init start_kernel(void)
