@@ -1,8 +1,8 @@
-&soc {
+/*&soc {
 	restart@10ac000 {
 		qcom,force-warm-reboot;
 	};
-};
+};*/
 
 &spmi_bus {
 	qcom,pm660@1 {
