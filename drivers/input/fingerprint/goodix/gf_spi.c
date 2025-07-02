@@ -60,6 +60,7 @@
 #define PATCH_LEVEL 10
 
 #define WAKELOCK_HOLD_TIME 2000 /* in ms */
+#define FP_UNLOCK_REJECTION_TIMEOUT (WAKELOCK_HOLD_TIME - 500)
 
 #define GF_SPIDEV_NAME     "goodix,fingerprint"
 /*device name after register in charater*/
@@ -325,8 +326,10 @@ static irqreturn_t gf_irq(int irq, void *handle)
 	struct gf_dev *gf_dev = &gf;
 	__pm_wakeup_event(gf_dev->fp_wakelock, msecs_to_jiffies(WAKELOCK_HOLD_TIME));
 	sendnlmsg(&msg);
-	if (gf_dev->device_available == 1) {
+	if ((gf_dev->wait_finger_down == true) && (gf_dev->device_available == 1) && (gf_dev->fb_black == 1)) {
 		printk("%s:shedule_work\n",__func__);
+		gf_dev->wait_finger_down = false;
+		schedule_work(&gf_dev->work);
 	}
 #elif defined(GF_FASYNC)
 	struct gf_dev *gf_dev = &gf;
@@ -539,6 +542,13 @@ static long gf_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 }
 #endif /*CONFIG_COMPAT*/
 
+ static void notification_work(struct work_struct *work)
+{
+	pr_debug("notification_work\n");
+	mdss_prim_panel_fb_unblank(FP_UNLOCK_REJECTION_TIMEOUT);
+	pr_debug("unblank\n");
+}
+
 static int gf_open(struct inode *inode, struct file *filp)
 {
 	struct gf_dev *gf_dev = &gf;
@@ -637,6 +647,65 @@ static const struct file_operations gf_fops = {
 #endif
 };
 
+static int goodix_fb_state_chg_callback(struct notifier_block *nb,
+		unsigned long val, void *data)
+{
+	struct gf_dev *gf_dev;
+	struct fb_event *evdata = data;
+	unsigned int blank;
+	char msg = 0;
+
+	if (val != FB_EVENT_BLANK)
+		return 0;
+
+	gf_dev = container_of(nb, struct gf_dev, notifier);
+	if (evdata && evdata->data && val == FB_EVENT_BLANK && gf_dev) {
+		blank = *(int *)(evdata->data);
+		switch (blank) {
+		case FB_BLANK_POWERDOWN:
+			if (gf_dev->device_available == 1) {
+				gf_dev->fb_black = 1;
+				gf_dev->wait_finger_down = true;
+				/* Disable IRQ when screen turns off,
+				 * only if proximity sensor is covered */
+				if (gf_dev->proximity_state)
+					gf_disable_irq(gf_dev);
+#if defined(GF_NETLINK_ENABLE)
+				msg = GF_NET_EVENT_FB_BLACK;
+				sendnlmsg(&msg);
+#elif defined(GF_FASYNC)
+				if (gf_dev->async)
+					kill_fasync(&gf_dev->async, SIGIO, POLL_IN);
+#endif
+			}
+			break;
+		case FB_BLANK_UNBLANK:
+		case FB_BLANK_NORMAL:
+			if (gf_dev->device_available == 1) {
+				gf_dev->fb_black = 0;
+				/* Unconditionally enable IRQ when screen turns on */
+				gf_enable_irq(gf_dev);
+#if defined(GF_NETLINK_ENABLE)
+				msg = GF_NET_EVENT_FB_UNBLACK;
+				sendnlmsg(&msg);
+#elif defined(GF_FASYNC)
+				if (gf_dev->async)
+					kill_fasync(&gf_dev->async, SIGIO, POLL_IN);
+#endif
+			}
+			break;
+		default:
+			pr_info("%s defalut\n", __func__);
+			break;
+		}
+	}
+	return NOTIFY_OK;
+}
+
+static struct notifier_block goodix_noti_block = {
+	.notifier_call = goodix_fb_state_chg_callback,
+};
+
 static ssize_t proximity_state_set(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
@@ -698,6 +767,9 @@ static int gf_probe(struct platform_device *pdev)
 	gf_dev->reset_gpio = -EINVAL;
 	gf_dev->pwr_gpio = -EINVAL;
 	gf_dev->device_available = 0;
+	gf_dev->fb_black = 0;
+	gf_dev->wait_finger_down = false;
+	INIT_WORK(&gf_dev->work, notification_work);
 
 #if defined CONFIG_MACH_XIAOMI_LAVENDER || defined CONFIG_MACH_XIAOMI_WAYNE
 	vreg = regulator_get(&gf_dev->spi->dev,"vcc_ana");
@@ -774,6 +846,9 @@ static int gf_probe(struct platform_device *pdev)
 	spi_clock_set(gf_dev, 1000000);
 #endif
 
+	gf_dev->notifier = goodix_noti_block;
+	fb_register_client(&gf_dev->notifier);
+
 	dev_set_drvdata(&gf_dev->spi->dev, gf_dev);
 
 	status = sysfs_create_group(&gf_dev->spi->dev.kobj, &attr_group);
@@ -823,6 +898,7 @@ static int gf_remove(struct platform_device *pdev)
 	struct gf_dev *gf_dev = &gf;
 
 	wakeup_source_unregister(gf_dev->fp_wakelock);
+	fb_unregister_client(&gf_dev->notifier);
 	if (gf_dev->input)
 		input_unregister_device(gf_dev->input);
 	input_free_device(gf_dev->input);
